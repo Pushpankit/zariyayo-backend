@@ -1,36 +1,25 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const multer = require('multer');
-const path = require('path');
-const adminController = require('../controllers/adminController');
-const Product = require('../models/Product');
+const upload = require("../utils/multer"); // For Cloudinary image upload
+const {
+  createProduct,
+  updateProduct,
+  deleteProduct,
+} = require("../controllers/adminController");
 
-// Multer setup
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueName + path.extname(file.originalname));
-  }
-});
+// @route   POST /api/admin/products
+// @desc    Add a new product
+// @access  Admin
+router.post("/products", upload.array("images", 4), createProduct);
 
-const upload = multer({ storage });
+// @route   PUT /api/admin/products/:id
+// @desc    Update an existing product
+// @access  Admin
+router.put("/products/:id", upload.array("images", 4), updateProduct);
 
-// Route to add product
-router.post('/add-product', upload.array('images', 4), adminController.addProduct);
-
-
-// Add after your upload/add-product routes
-router.get('/products', async (req, res) => {
-  try {
-    const products = await Product.find(); // or your custom logic
-    res.json(products);
-  } catch (err) {
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
+// @route   DELETE /api/admin/products/:id
+// @desc    Delete a product
+// @access  Admin
+router.delete("/products/:id", deleteProduct);
 
 module.exports = router;

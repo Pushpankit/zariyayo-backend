@@ -1,8 +1,14 @@
-const express = require("express");
-const { createOrder } = require("../controllers/orderController");
+// server/routes/orderRoutes.js
 
+const express = require("express");
 const router = express.Router();
 
-router.post("/", createOrder); // POST /api/orders
+// Controller
+const { createOrder } = require("../controllers/orderController");
+
+// @route   POST /api/orders
+// @desc    Create a new order
+// @access  Public (can secure later with auth)
+router.post("/", createOrder);
 
 module.exports = router;
