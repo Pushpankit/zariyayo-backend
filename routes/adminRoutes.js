@@ -1,25 +1,47 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../utils/multer"); // For Cloudinary image upload
-const {
-  createProduct,
-  updateProduct,
-  deleteProduct,
-} = require("../controllers/adminController");
+const multer = require("multer");
+const Product = require("../models/Product"); // adjust if needed
 
-// @route   POST /api/admin/products
-// @desc    Add a new product
-// @access  Admin
-router.post("/products", upload.array("images", 4), createProduct);
+// multer setup
+const storage = multer.memoryStorage(); // or use disk/cloudinary
+const upload = multer({ storage });
 
-// @route   PUT /api/admin/products/:id
-// @desc    Update an existing product
-// @access  Admin
-router.put("/products/:id", upload.array("images", 4), updateProduct);
+// @route POST /api/admin/add-product
+router.post("/add-product", upload.array("images", 4), async (req, res) => {
+  try {
+    const {
+      title,
+      category,
+      description,
+      sizes,
+      pricesBySize,
+      originalPricesBySize,
+      stockBySize,
+    } = req.body;
 
-// @route   DELETE /api/admin/products/:id
-// @desc    Delete a product
-// @access  Admin
-router.delete("/products/:id", deleteProduct);
+    const images = req.files.map(file => {
+      // if using Cloudinary or similar, upload and store URL
+      return `uploads/${file.originalname}`; // temp placeholder
+    });
+
+    const newProduct = new Product({
+      title,
+      category,
+      description,
+      sizes: JSON.parse(sizes),
+      pricesBySize: JSON.parse(pricesBySize),
+      originalPricesBySize: JSON.parse(originalPricesBySize),
+      stockBySize: JSON.parse(stockBySize),
+      image: images,
+    });
+
+    await newProduct.save();
+    res.status(201).json({ success: true, message: "Product added!" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
 
 module.exports = router;
