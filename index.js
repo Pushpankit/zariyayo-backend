@@ -1,11 +1,16 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-const dotenv = require('dotenv');
-const path = require('path');
+require("dotenv").config();
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const path = require("path");
 
-// Load env variables
-dotenv.config();
+// Test Cloudinary config
+console.log("Cloudinary config test:");
+console.log({
+  cloud: process.env.CLOUDINARY_CLOUD_NAME,
+  key: process.env.CLOUDINARY_API_KEY ? "✅" : "❌",
+  secret: process.env.CLOUDINARY_API_SECRET ? "✅" : "❌",
+});
 
 // Initialize app
 const app = express();
@@ -14,21 +19,23 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Static files (for image URLs like /uploads/image.jpg)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve static files (for local image access if needed)
+// app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // Routes
-const clientRoutes = require('./routes/clientRoutes');
-const adminRoutes = require('./routes/adminRoutes');
-const orderRoutes = require('./routes/orderRoutes');
+const clientRoutes = require("./routes/clientRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const uploadRoutes = require("./routes/upload");
 
-app.use('/api/client', clientRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api', orderRoutes); // will register /api/orders
+app.use("/api/client", clientRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/orders", orderRoutes);
+app.use("/api", uploadRoutes); // POST /api/upload
 
-// Root test route
-app.get('/', (req, res) => {
-  res.send('✅ Zariyayo Backend API is running!');
+// Root route for testing
+app.get("/", (req, res) => {
+  res.send("✅ Zariyayo Backend API is running!");
 });
 
 // MongoDB connection
@@ -37,8 +44,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log('✅ MongoDB connected'))
-  .catch((err) => console.error('❌ MongoDB connection error:', err));
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
 
 // Start server
 const PORT = process.env.PORT || 5000;
