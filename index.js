@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
 
+
 // ✅ Removed express-async-errors because it's not needed in Express v5
 
 // Optional: Test Cloudinary env config
@@ -26,11 +27,13 @@ const clientRoutes = require("./routes/clientRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const orderRoutes = require("./routes/orderRoutes");
 const uploadRoutes = require("./routes/upload");
+const contactRoutes = require("./routes/contactRoutes");
 
 app.use("/api/client", clientRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api", uploadRoutes); // POST /api/upload
+app.use("/api/contact", contactRoutes);
 
 // Test route
 app.get("/", (req, res) => {
