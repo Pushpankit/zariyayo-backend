@@ -4,11 +4,11 @@ const multer = require("multer");
 const Product = require("../models/Product");
 const cloudinary = require("../utils/cloudinary");
 
-// Setup multer to read file buffers (memory-based)
+// Setup multer for memory-based uploads
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// Helper: Upload one file buffer to Cloudinary
+// Upload helper
 const uploadToCloudinary = (fileBuffer, filename) => {
   return new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
@@ -18,14 +18,15 @@ const uploadToCloudinary = (fileBuffer, filename) => {
       },
       (error, result) => {
         if (error) return reject(error);
-        resolve(result.secure_url); // ✅ Return Cloudinary URL
+        resolve(result.secure_url);
       }
     );
     stream.end(fileBuffer);
   });
 };
 
-router.post("/add-product", upload.array("images", 4), async (req, res) => {
+// ✅ Final POST /api/admin/products
+router.post("/products", upload.array("images", 4), async (req, res) => {
   try {
     const {
       title,
@@ -37,17 +38,17 @@ router.post("/add-product", upload.array("images", 4), async (req, res) => {
       stockBySize,
     } = req.body;
 
-    console.log("🖼 Files received:", req.files.map(f => f.originalname));
+    console.log("🖼 Images received:", req.files.map(f => f.originalname));
 
-    // ✅ Upload each image to Cloudinary
+    // Upload images to Cloudinary
     const imageUrls = [];
     for (const file of req.files) {
       const url = await uploadToCloudinary(file.buffer, file.originalname);
-      console.log("✅ Uploaded to Cloudinary:", url);
+      console.log("✅ Uploaded:", url);
       imageUrls.push(url);
     }
 
-    // ✅ Save to DB with Cloudinary URLs
+    // Save product in DB
     const newProduct = new Product({
       title,
       category,
@@ -56,18 +57,19 @@ router.post("/add-product", upload.array("images", 4), async (req, res) => {
       pricesBySize: JSON.parse(pricesBySize),
       originalPricesBySize: JSON.parse(originalPricesBySize),
       stockBySize: JSON.parse(stockBySize),
-      image: imageUrls, // 🟢 Save secure Cloudinary URLs
+      image: imageUrls,
     });
 
     await newProduct.save();
 
     res.status(201).json({
       success: true,
-      message: "✅ Product added!",
+      message: "✅ Product added",
       product: newProduct,
+      imageUrls, // helpful for frontend preview/debug
     });
   } catch (err) {
-    console.error("❌ Error in /add-product:", err);
+    console.error("❌ Error in POST /products:", err);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
