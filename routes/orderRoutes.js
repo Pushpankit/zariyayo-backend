@@ -1,15 +1,15 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Order = require('../models/Order'); // ✅ MATCHES your file name
+const Order = require("../models/Order");
 
-router.post('/orders', async (req, res) => {
+router.post("/", async (req, res) => {
   try {
     const newOrder = new Order(req.body);
     await newOrder.save();
-    res.status(201).json({ message: 'Order placed successfully!' });
+    res.status(201).json({ success: true, order: newOrder });
   } catch (err) {
-    console.error('❌ Order save error:', err);
-    res.status(500).json({ message: 'Server error while saving order' });
+    console.error("❌ Error creating order:", err);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
