@@ -10,23 +10,21 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingUser = await User.findOne({ phone: sanitizedPhone });
+    const sanitizedPhone = phone.replace(/\+91/, "").trim(); // ✅ FIXED ORDER
 
+    const existingUser = await User.findOne({ phone: sanitizedPhone });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists with this phone number" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-const sanitizedPhone = phone.replace(/\+91/, "").trim();
 
-
-  const newUser = new User({
-  fullName,
-  email,
-  phone: sanitizedPhone,
-  password: hashedPassword,
-});
-
+    const newUser = new User({
+      fullName,
+      email,
+      phone: sanitizedPhone,
+      password: hashedPassword,
+    });
 
     const savedUser = await newUser.save();
 
@@ -55,7 +53,9 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "Phone and password are required" });
     }
 
-    const user = await User.findOne({ phone });
+    const sanitizedPhone = phone.replace(/\+91/, "").trim(); // ✅ Strip +91 for login
+
+    const user = await User.findOne({ phone: sanitizedPhone });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -111,7 +111,6 @@ exports.updateUserCart = async (req, res) => {
 };
 
 // @desc Get user from Firebase phone/email
-// ✅ Used by Firebase phone login to restore user and cart
 exports.getUserByPhoneOrEmail = async (req, res) => {
   try {
     let { phone, email } = req.query;
@@ -127,6 +126,8 @@ exports.getUserByPhoneOrEmail = async (req, res) => {
     const query = {};
     if (phone) query.phone = phone;
     if (email) query.email = email;
+
+    console.log("🔍 Looking up user by:", query); // ✅ Add logs for debugging
 
     const user = await User.findOne(query);
 
@@ -146,5 +147,3 @@ exports.getUserByPhoneOrEmail = async (req, res) => {
     res.status(500).json({ message: "Server error fetching user" });
   }
 };
-
-

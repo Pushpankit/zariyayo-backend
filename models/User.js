@@ -8,15 +8,19 @@ const userSchema = new mongoose.Schema({
 
   cart: [
     {
-      id: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product" },
       title: String,
       image: [String],
       selectedSize: String,
-      quantity: Number,
+      quantity: { type: Number, default: 1 },
       price: Number,
       stockBySize: mongoose.Schema.Types.Mixed,
     },
   ],
+
+  // Optional for admin dashboard or role-based access
+  // role: { type: String, enum: ["user", "admin"], default: "user" },
+
 }, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);
