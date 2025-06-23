@@ -10,20 +10,23 @@ exports.registerUser = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingUser = await User.findOne({ phone });
+    const existingUser = await User.findOne({ phone: sanitizedPhone });
+
     if (existingUser) {
       return res.status(400).json({ message: "User already exists with this phone number" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+const sanitizedPhone = phone.replace(/\+91/, "").trim();
 
-    const newUser = new User({
-      fullName,
-      email,
-      phone,
-      password: hashedPassword,
-      cart: [],
-    });
+
+  const newUser = new User({
+  fullName,
+  email,
+  phone: sanitizedPhone,
+  password: hashedPassword,
+});
+
 
     const savedUser = await newUser.save();
 
@@ -108,12 +111,17 @@ exports.updateUserCart = async (req, res) => {
 };
 
 // @desc Get user from Firebase phone/email
+// ✅ Used by Firebase phone login to restore user and cart
 exports.getUserByPhoneOrEmail = async (req, res) => {
   try {
-    const { phone, email } = req.query;
+    let { phone, email } = req.query;
 
     if (!phone && !email) {
       return res.status(400).json({ message: "Phone or email is required" });
+    }
+
+    if (phone) {
+      phone = phone.replace("+91", "").trim();
     }
 
     const query = {};
@@ -134,7 +142,9 @@ exports.getUserByPhoneOrEmail = async (req, res) => {
       cart: user.cart,
     });
   } catch (err) {
-    console.error("❌ Fetch user error:", err);
-    res.status(500).json({ message: "Server error while fetching user" });
+    console.error("❌ get-user error:", err);
+    res.status(500).json({ message: "Server error fetching user" });
   }
 };
+
+
