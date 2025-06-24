@@ -11,7 +11,7 @@ const {
 // 🔐 Auth Routes
 router.post("/register", registerUser);
 router.post("/login", loginUser);
-router.patch("/update-cart", updateUserCart);
+router.post("/update-cart", updateUserCart);
 router.get("/get-user", getUserByPhoneOrEmail);
 
 module.exports = router;
